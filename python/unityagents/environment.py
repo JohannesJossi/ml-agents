@@ -23,7 +23,7 @@ logger = logging.getLogger("unityagents")
 class UnityEnvironment(object):
     def __init__(self, file_name, worker_id=0,
                  base_port=5005, curriculum=None,
-                 seed=0):
+                 seed=0, docker_training=False):
         """
         Starts a new unity environment and establishes a connection with the environment.
         Notice: Currently communication between Unity and Python takes place over an open socket without authentication.
@@ -32,6 +32,7 @@ class UnityEnvironment(object):
         :string file_name: Name of Unity environment binary.
         :int base_port: Baseline port number to connect to Unity environment over. worker_id increments over this.
         :int worker_id: Number to add to communication port (5005) [0]. Used for asynchronous agent scenarios.
+        :param docker_training: Informs this class whether the process is being run within a container.
         """
 
         atexit.register(self.close)
@@ -95,11 +96,21 @@ class UnityEnvironment(object):
         else:
             logger.debug("This is the launch string {}".format(launch_string))
             # Launch Unity environment
-            proc1 = subprocess.Popen(
-                [launch_string,
-                 '--port', str(self.port),
-                 '--seed', str(seed)])
-
+            if docker_training == False:
+                proc1 = subprocess.Popen(
+                    [launch_string,
+                     '--port', str(self.port),
+                     '--seed', str(seed)])
+            else:
+                docker_ls = ("exec xvfb-run --auto-servernum"
+                             " --server-args='-screen 0 640x480x24'"
+                             " {0} --port {1} --seed {2}").format(launch_string,
+                                                                  str(self.port),
+                                                                  str(seed))
+                proc1 = subprocess.Popen(docker_ls,
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE,
+                                         shell=True)
         self._socket.settimeout(30)
         try:
             try:
