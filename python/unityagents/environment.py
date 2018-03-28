@@ -102,6 +102,23 @@ class UnityEnvironment(object):
                      '--port', str(self.port),
                      '--seed', str(seed)])
             else:
+                """
+                Comments for future maintenance:
+                    xvfb-run is a wrapper around Xvfb, a virtual xserver where all
+                    rendering is done to virtual memory. It automatically creates a
+                    new virtual server automatically picking a server number `auto-servernum`.
+                    The server is passed the arguments using `server-args`, we are telling
+                    Xvfb to create Screen number 0 with width 640, height 480 and depth 24 bits.
+                    Note that 640 X 480 are the default width and height. The main reason for
+                    us to add this is because we'd like to change the depth from the default
+                    of 8 bits to 24.
+                    Unfortunately, this means that we will need to pass the arguments through
+                    a shell which is why we set `shell=True`. Now, this adds its own
+                    complications. E.g SIGINT can bounce off the shell and not get propagated
+                    to the child processes. This is why we add `exec`, so that the shell gets
+                    launched, the arguments are passed to `xvfb-run`. `exec` replaces the shell
+                    we created with `xvfb`.
+                """
                 docker_ls = ("exec xvfb-run --auto-servernum"
                              " --server-args='-screen 0 640x480x24'"
                              " {0} --port {1} --seed {2}").format(launch_string,

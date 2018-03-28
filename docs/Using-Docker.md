@@ -1,6 +1,6 @@
 # Using Docker For ML-Agents (Experimental)
 
-We currently offer a solution for Windows and Mac users who would like to do training or inference using Docker. This option may be appealing to those who would like to avoid installing Python and TensorFlow themselves. The current setup forces both TensorFlow and Unity to _only_ rely on the CPU for computations. Consequently, our Docker simulation [uses the CPU](https://en.wikipedia.org/wiki/Xvfb) to do visual rendering. This means that environments which involve agents using camera-based visual observations might be slower.
+We currently offer a solution for Windows and Mac users who would like to do training or inference using Docker. This option may be appealing to those who would like to avoid installing Python and TensorFlow themselves. The current setup forces both TensorFlow and Unity to _only_ rely on the CPU for computations. Consequently, our Docker simulation [does not use a GPU](https://en.wikipedia.org/wiki/Xvfb) to do visual rendering. This means that rich environments which involve agents using camera-based visual observations might be slower.
 
 
 ## Requirements
@@ -28,9 +28,14 @@ Unity environment **has** to be built for the **linux platform**. When building 
 - Set the _Target Platform_ to `Linux`
 - Set the _Architecture_ to `x86_64`
 
-![Build Settings For Docker](images/docker_build_settings.png)
+![Build Settings For Docker](images/docker_build_settings_noheadless.png)
 
 Then click `Build`, pick an environment name (e.g. `3DBall`) and set the output directory to `unity-volume`. After building, ensure that the file `<environment-name>.x86_64` and subdirectory `<environment-name>_Data/` are created under `unity-volume`.
+
+**NOTE** If you are only collecting vector observations from Unity, you can select the `headless` option here:
+
+![Build Settings For Docker](images/docker_build_settings_headless.png)
+
 
 ### Build the Docker Container
 
